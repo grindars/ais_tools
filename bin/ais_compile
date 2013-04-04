@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+
+if File.exist?(File.expand_path("../../.git", __FILE__))
+  require "bundler/setup"
+end
+
+require "ais_tools"
+require "trollop"
+
+opts = Trollop.options do
+  version "ais_cocompile #{AisTools::VERSION}"
+  opt :input, "Source file", :type => String, :required => true
+  opt :output, "Output file", :type => String, :required => true
+  opt :target, "Image target ('uart', 'spi' or 'nand')", :type => String, :required => true
+end
+
+source = File.open(opts[:input], "rb") { |io| io.read }
+
+compiler = AisTools::Compiler.new
+binary = compiler.compile(opts[:target], source)
+
+File.open(opts[:output], "w") do |io|
+  binary.save(io)
+end
+
+

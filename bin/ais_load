@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+
+if File.exist?(File.expand_path("../../.git", __FILE__))
+  require "bundler/setup"
+end
+
+require "ais_tools"
+require "trollop"
+require "serialport"
+
+opts = Trollop.options do
+  version "ais_load #{AisTools::VERSION}"
+  opt :port, "Boot port", :type => String, :required => true
+  opt :input, "Binary AIS script to load", :type => String, :required => true
+end
+
+ais = File.open(opts[:input], "rb") { |io| AisTools::Binary.load(io) }
+port = SerialPort.open(opts[:port], 115200)
+
+loader = AisTools::Loader.new(ais, port)
+loader.run!
